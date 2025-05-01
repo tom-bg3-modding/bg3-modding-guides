@@ -1,0 +1,7 @@
+# Registering Triggers
+
+Triggers are incredibly common 
+
+Generally, an area trigger sends an event when something is in it.
+We specify what exactly is in it by registering that trigger.
+

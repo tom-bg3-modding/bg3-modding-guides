@@ -16,18 +16,42 @@ Here I'm going to break down the code to show how Larian implemented this, and m
 
 In the game world, there are a couple of game objects that allow this sequence to play out:
 
-. [#boulder]#`S_CHA_FL1_Fissure_Boulder`# - 
-. `S_CHA_FL1_FissureFloor`` - 
-. [#hole-trigger]#`S_CHA_Outside_HoleTrigger`# - A box trigger placed directly over where the hole appears
-. [#damage-trigger]#`S_CHA_OUTSIDE_Fissure_DamageTrigger`# - A box trigger placed inside the hole down to the chapel.
+[circle]
+* Boulders - These both have the same model, and are supposed to appear to be the same object
+** [#boulder-outside]#`S_CHA_OUTSIDE_Fissure_Boulder`# - This boulder is hanging above the cracked floor
+** [#boulder-inside]#`S_CHA_FL1_Fissure_Boulder`# - This boulder is inside the chapel.
+
+* Floors
+** [#inside-floor]#`S_CHA_FL1_FissureFloor`# - 
+* [#hole-trigger]#`S_CHA_Outside_HoleTrigger`# - A box trigger placed directly over where the hole appears
+* [#damage-trigger]#`S_CHA_OUTSIDE_Fissure_DamageTrigger`# - A box trigger placed inside the hole down to the chapel.
+
+* [#lower-level-trigger]#`S_CHA_FL1_Fissure_BoulderPartyTrigger`# - This is a gigantic box trigger that covers the entire lower level of the chapel.
+It's used by the game to decide if to play the animation showing the boulder falling into the chapel's lower level.
 
 ## Scripting code
 
+Let's zoom out for a second and understand when this goal gets initialised.
+Recall that OSIRIS goals are executed from the top down.
+The boulder code is in a goal called `Act1_CHA_Chapel`.
+This follows Larian's naming convention, with Act 1 being the region, CHA being the Chapel, and Chapel being, well, the chapel (it's the only thing in this area).
+
+image::boulder_execution_flow.png[]
+
+Here we can see there are 2 parent goals above this goal.
+`_Start` is the root for everything, and checks the play has created a character.
+`Act1` checks that the player has loaded into the Wilderness Map (the start of Act 1).
+
+The sub goals for both these goals will not begin initialising until `GoalCompleted` action has been called.
+Once the player loads into the Wilderness Map, the `INIT` code section executes, and the rules defined in the `KB` section become active.
+
 NOTE: In OSIRIS code, game objects are referred to using their GUIDSTRING.
-This takes the form `{Name}_{GUID}`.
+This takes the form `\{Name\}_\{GUID\}`.
 I've stripped the GUIDs to make the code a bit easier to read.
 
-### Init
+### Init Section
+
+This is executed as soon as the player loads onto the map.
 
 [source, OSIRIS]
 ----
@@ -57,9 +81,10 @@ DB_CHA_Chapel_ValidBoulderDamageTypes("Force");
 
 <1> The `REGION` and `END_REGION` tags group lines of code together into collapsible menus. 
 
-<2> Objects can be "On Stage" or "Off Stage". An offstage object cannot be seen or interacted with - it's as if it doesn't exist. 
-These two objects are the boulder that falls, and the crack in the floor beneath it.
-They will be set offstage if the boulder falls, so we make sure they're initially set on stage. (Important for if we reload the story) +
+<2> This action sets objects "On Stage" or "Off Stage" stage depending on the second Boolean parameter. 
+An offstage object cannot be seen or interacted with - it's as if it doesn't exist. 
+These two objects are the <<boulder-inside, boulder inside the chapel>>, and the <<inside-floor, cracked floor/ceiling>> above it.
+As the boulder has not yet crashed through the ceiling into the chapel, these two objects are hidden. +
 See link:https://docs.baldursgate3.game/index.php?title=SetOnStage[SetOnStage] for more. 
 
 <3> When the boulder falls, it will open up a hole to the chapel. 
@@ -67,50 +92,54 @@ Should the player have left anything on the floor where this hole appears, we wa
 Here we set a flag that will throw an event whenever an item enters or leaves the trigger. +
 See link:https://docs.baldursgate3.game/index.php?title=TriggerRegisterForItems[TriggerRegisterForItems] for more.
 
-<4> Tom do more research, i think proc is a function
+<4> The <<lower-level-trigger, `S_CHA_FL1_Fissure_BoulderPartyTrigger`>> is used to decide if to play the boulder falling animation.
+This decisions depends on if the player in the to see it.
+Therefore we register the trigger to send an event if a party member is in the lower level of the chapel - so we know to play the animation.
 
 <5> Here we set up the kinds of damage that can hurt the boulder. The `DB_` prefixes a database. 
 Each call of `DB_CHA_Chapel_ValidBoulderDamageTypes` adds a new row to this database, setting it up if it doesn't exist.
 Here we essentially end up with a list of damage types.
 
-### KB (Logic)
+### KB (Knowledge Base) Section
 
 Here I'll break up the code by region.
+Remember, each `IF ... THEN` block is called a _rule_.
+Rules only execute if every condition in their `IF` block is met.
 This first one deals with items being over the hole before it's been created.
 
 [source, OSIRIS]
 ----
 //REGION Before the fall
-IF
-UseStarted(_Player, CHA_OUTSIDE_Fissure_Boulder) <1>
+IF <1>
+UseStarted(_Player, CHA_OUTSIDE_Fissure_Boulder) <2>
 THEN
-StartVoiceBark(CHA_Outside_VB_Boulder, _Player);
+StartVoiceBark(CHA_Outside_VB_Boulder, _Player); <2>
 
-IF
-UseStarted(_Player, S_CHA_OUTSIDE_Fissure_Crack) <1>
+IF <1>
+UseStarted(_Player, S_CHA_OUTSIDE_Fissure_Crack)
 THEN
 StartVoiceBark(CHA_Outside_VB_Fissure, _Player);
 
-IF
-ItemEnteredTrigger(_Item, S_CHA_Outside_HoleTrigger, _) <2>
+IF <3>
+ItemEnteredTrigger(_Item, S_CHA_Outside_HoleTrigger, _)
 AND
 Exists(_Item,1)
 THEN
 DB_CHA_ItemOverHole(_Item);
 
-IF
+IF <3>
 ItemLeftTrigger(_Item, S_CHA_Outside_HoleTrigger, _)
 THEN
 NOT DB_CHA_ItemOverHole(_Item);
 
-IF <3>
+IF <4>
 ItemEnteredTrigger(_Item,S_CHA_OUTSIDE_Fissure_DamageTrigger, _)
 AND
 Exists(_Item,1)
 THEN
 DB_CHA_Boulder_ItemAbove(_Item);
 
-IF
+IF <4>
 ItemLeftTrigger(_Item,S_CHA_OUTSIDE_Fissure_DamageTrigger, _)
 THEN
 NOT DB_CHA_Boulder_ItemAbove(_Item);
@@ -120,13 +149,20 @@ NOT DB_CHA_Boulder_ItemAbove(_Item);
 <1> Voice Barks - If the a character interacts with either the crack in the floor or hanging boulder, they will say something. +
 See link:https://docs.baldursgate3.game/index.php?title=UseStarted[UseStarted] for more info.
 
-<2> Recall how we set a trigger to throw an event whenever an item enters or leaves the trigger. 
+<2> Notice how the `_Player` parameter begins with an underscore.
+These are OSIRIS variables, and are used to make rules more generic.
+Here, the `UseStarted` event returns a `_Player` and a `_ITEM`.
+We want the item to be a specific object, but we don't really care which player clicks on it.
+Therefore we can catch what player did the clicking using the generic `_Player`, and use that variable in the bark action.
+
+<3> Recall how we set a trigger to throw an event whenever an item enters or leaves the trigger. 
 These are the events thrown by the <<hole-trigger, `S_CHA_Outside_HoleTrigger`>>.
 If the player drops an item inside this trigger (where the hole will appear), it will be added to a database.
 Similarly if it leaves the trigger, the item will be removed from the database.
 
-<3> These two events are much the same, except they're for the <<damage-trigger, `S_CHA_OUTSIDE_Fissure_DamageTrigger`>>.
+<4> These two events are much the same, except they're for the <<damage-trigger, `S_CHA_OUTSIDE_Fissure_DamageTrigger`>>.
 
+This region deals with the bandits' reaction to the boulder falling.
 
 [source, OSIRIS]
 ----
@@ -141,16 +177,16 @@ THEN
 PROC_CHA_DamagedByBoulder((GUIDSTRING)_Item);
 
 IF
-EntityEvent(S_CHA_FL1_Fissure_Boulder_000_a27427a2-cc8f-4f82-b611-ea11457d2ba9, "CHA_Outside_Event_SendToCrash")
+EntityEvent(S_CHA_FL1_Fissure_Boulder, "CHA_Outside_Event_SendToCrash")
 THEN
-SetFlag(CHA_FL1_State_BanditsGoToCrash_4f46902a-3d8a-40bd-a31f-af557ce1811a, NULL_00000000-0000-0000-0000-000000000000);
+SetFlag(CHA_FL1_State_BanditsGoToCrash, NULL_00000000-0000-0000-0000-000000000000);
 
 IF
-EntityEvent(S_CHA_FL1_Fissure_Boulder_000_a27427a2-cc8f-4f82-b611-ea11457d2ba9, "CHA_Outside_Event_SendToCrash")
+EntityEvent(S_CHA_FL1_Fissure_Boulder, "CHA_Outside_Event_SendToCrash")
 AND
 DB_CHA_InsideBandits(_Bandit, _)
 AND
-_Bandit != S_CHA_FL1_BanditGuard_4000f859-71fe-49ef-8400-da44b6fef92a
+_Bandit != S_CHA_FL1_BanditGuard
 THEN
 PROC_CHA_FL1_SendToCrashPos(_Bandit);
 
@@ -164,6 +200,8 @@ SetCombatGroupID(_Bandit, "CHA_CorridorEncounter");
 
 //END_REGION
 ----
+
+This region
 
 [source, OSIRIS]
 ----
