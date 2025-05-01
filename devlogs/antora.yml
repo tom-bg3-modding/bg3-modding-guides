@@ -1,0 +1,5 @@
+name: devlogs
+title: Devlogs
+version: ~
+nav:
+  - modules/ROOT/nav.adoc

@@ -1,0 +1,408 @@
+# How the Boulder Trap in the Chapel Works
+
+If you're unfamiliar, in Act 1 of BG3, just outside the Nautiloid Crashsite, there is an Ancient Temple where you find Withers.
+At the top of this temple are 3 NPCs who will try and stop you going inside. 
+
+Near their little camp outside, there is a boulder hanging on a rope above a cracked floor.
+You can shoot this rope to drop the boulder onto them, breaking the floor and opening a way into the temple.
+
+image::assets/boulderTrap_ingame.png[]
+
+Simple right? No.
+
+Here I'm going to break down the code to show how Larian implemented this, and maybe learn a thing or two about how to add dynamic events yourself.
+
+## Setup
+
+In the game world, there are a couple of game objects that allow this sequence to play out:
+
+. [#boulder]#S_CHA_FL1_Fissure_Boulder# - 
+. S_CHA_FL1_FissureFloor - 
+. [#hole-trigger]#S_CHA_Outside_HoleTrigger# - A box trigger placed directly over where the hole appears
+. [#damage-trigger]#S_CHA_OUTSIDE_Fissure_DamageTrigger# - A box trigger placed inside the hole down to the chapel.
+
+## Scripting code
+
+NOTE: In OSIRIS code, game objects are referred to using their GUIDSTRING.
+This takes the form `{Name}_{GUID}`.
+I've stripped the GUIDs to make the code a bit easier to read.
+
+### Init
+
+[source, OSIRIS]
+----
+//REGION Boulder Puzzle <1>
+DB_CHA_BoulderAttacker((CHARACTER)NULL_00000000-0000-0000-0000-000000000000);
+
+SetOnStage(S_CHA_FL1_Fissure_Boulder, 0); <2>
+SetOnStage(S_CHA_FL1_FissureFloor, 0);
+
+TriggerRegisterForItems(S_CHA_Outside_HoleTrigger); <3>
+TriggerRegisterForItems(S_CHA_OUTSIDE_Fissure_DamageTrigger);
+TriggerRegisterForItems(S_CHA_FL1_Fissure_DamageTrigger);
+
+PROC_TriggerRegisterForParty(S_CHA_FL1_Fissure_BoulderPartyTrigger); <4>
+
+DB_CHA_Chapel_ValidBoulderDamageTypes("Slashing"); <5>
+DB_CHA_Chapel_ValidBoulderDamageTypes("Piercing");
+DB_CHA_Chapel_ValidBoulderDamageTypes("Bludgeoning");
+DB_CHA_Chapel_ValidBoulderDamageTypes("Acid");
+DB_CHA_Chapel_ValidBoulderDamageTypes("Thunder");
+DB_CHA_Chapel_ValidBoulderDamageTypes("Fire");
+DB_CHA_Chapel_ValidBoulderDamageTypes("Lightning");
+DB_CHA_Chapel_ValidBoulderDamageTypes("Cold");
+DB_CHA_Chapel_ValidBoulderDamageTypes("Force");
+//END_REGION <1>
+---- 
+
+<1> The `REGION` and `END_REGION` tags group lines of code together into collapsible menus. 
+
+<2> Objects can be "On Stage" or "Off Stage". An offstage object cannot be seen or interacted with - it's as if it doesn't exist. 
+These two objects are the boulder that falls, and the crack in the floor beneath it.
+They will be set offstage if the boulder falls, so we make sure they're initially set on stage. (Important for if we reload the story) +
+See link:https://docs.baldursgate3.game/index.php?title=SetOnStage[SetOnStage] for more. 
+
+<3> When the boulder falls, it will open up a hole to the chapel. 
+Should the player have left anything on the floor where this hole appears, we want these items to fall into the hole too. 
+Here we set a flag that will throw an event whenever an item enters or leaves the trigger. +
+See link:https://docs.baldursgate3.game/index.php?title=TriggerRegisterForItems[TriggerRegisterForItems] for more.
+
+<4> Tom do more research, i think proc is a function
+
+<5> Here we set up the kinds of damage that can hurt the boulder. The `DB_` prefixes a database. 
+Each call of `DB_CHA_Chapel_ValidBoulderDamageTypes` adds a new row to this database, setting it up if it doesn't exist.
+Here we essentially end up with a list of damage types.
+
+### KB (Logic)
+
+Here I'll break up the code by region.
+This first one deals with items being over the hole before it's been created.
+
+[source, OSIRIS]
+----
+//REGION Before the fall
+IF
+UseStarted(_Player, CHA_OUTSIDE_Fissure_Boulder) <1>
+THEN
+StartVoiceBark(CHA_Outside_VB_Boulder, _Player);
+
+IF
+UseStarted(_Player, S_CHA_OUTSIDE_Fissure_Crack) <1>
+THEN
+StartVoiceBark(CHA_Outside_VB_Fissure, _Player);
+
+IF
+ItemEnteredTrigger(_Item, S_CHA_Outside_HoleTrigger, _) <2>
+AND
+Exists(_Item,1)
+THEN
+DB_CHA_ItemOverHole(_Item);
+
+IF
+ItemLeftTrigger(_Item, S_CHA_Outside_HoleTrigger, _)
+THEN
+NOT DB_CHA_ItemOverHole(_Item);
+
+IF <3>
+ItemEnteredTrigger(_Item,S_CHA_OUTSIDE_Fissure_DamageTrigger, _)
+AND
+Exists(_Item,1)
+THEN
+DB_CHA_Boulder_ItemAbove(_Item);
+
+IF
+ItemLeftTrigger(_Item,S_CHA_OUTSIDE_Fissure_DamageTrigger, _)
+THEN
+NOT DB_CHA_Boulder_ItemAbove(_Item);
+//END_REGION
+----
+
+<1> Voice Barks - If the a character interacts with either the crack in the floor or hanging boulder, they will say something. +
+See link:https://docs.baldursgate3.game/index.php?title=UseStarted[UseStarted] for more info.
+
+<2> Recall how we set a trigger to throw an event whenever an item enters or leaves the trigger. 
+These are the events thrown by the <<hole-trigger, `S_CHA_Outside_HoleTrigger`>>.
+If the player drops an item inside this trigger (where the hole will appear), it will be added to a database.
+Similarly if it leaves the trigger, the item will be removed from the database.
+
+<3> These two events are much the same, except they're for the <<damage-trigger, `S_CHA_OUTSIDE_Fissure_DamageTrigger`>>.
+
+
+[source, OSIRIS]
+----
+//REGION The fall (old but needed logic)
+IF
+EntityEvent(S_CHA_OUTSIDE_Fissure_Boulder, "CHA_Outside_State_DebrisPillarImpact")
+AND
+DB_CHA_Boulder_ItemAbove(_Item)
+AND
+NOT DB_CHA_ItemOverHole(_Item)
+THEN
+PROC_CHA_DamagedByBoulder((GUIDSTRING)_Item);
+
+IF
+EntityEvent(S_CHA_FL1_Fissure_Boulder_000_a27427a2-cc8f-4f82-b611-ea11457d2ba9, "CHA_Outside_Event_SendToCrash")
+THEN
+SetFlag(CHA_FL1_State_BanditsGoToCrash_4f46902a-3d8a-40bd-a31f-af557ce1811a, NULL_00000000-0000-0000-0000-000000000000);
+
+IF
+EntityEvent(S_CHA_FL1_Fissure_Boulder_000_a27427a2-cc8f-4f82-b611-ea11457d2ba9, "CHA_Outside_Event_SendToCrash")
+AND
+DB_CHA_InsideBandits(_Bandit, _)
+AND
+_Bandit != S_CHA_FL1_BanditGuard_4000f859-71fe-49ef-8400-da44b6fef92a
+THEN
+PROC_CHA_FL1_SendToCrashPos(_Bandit);
+
+PROC
+PROC_CHA_FL1_SendToCrashPos((CHARACTER)_Bandit)
+THEN
+SetEntityEvent(_Bandit, "CHA_EnemyAtTheCrash", 1);
+PROC_CHA_FL1_BanditForceActive(_Bandit);
+PROC_SpotPlayers_StopSpotting(_Bandit, "CHA_InsideBanditSpotter");
+SetCombatGroupID(_Bandit, "CHA_CorridorEncounter");
+
+//END_REGION
+----
+
+//REGION The NEW Fall
+// Boulder directly attacked
+IF
+AttackedBy(S_CHA_OUTSIDE_Fissure_Boulder, _AttackOwner, _, _DamageType, _, _, _)
+AND
+DB_CHA_Chapel_ValidBoulderDamageTypes(_DamageType)
+THEN
+PROC_CHA_DestroyPillar((CHARACTER)_AttackOwner);
+
+// Vines
+IF
+DestroyedBy(S_CHA_OUTSIDE_Fissure_GrapplingVines_001_c64eb1e0-cb5a-46a6-af3f-7bf2b2505e84, _, _DestroyerOwner, _)
+THEN
+PROC_CHA_DestroyPillar(_DestroyerOwner);
+
+PROC
+PROC_CHA_DestroyPillar((CHARACTER)_Attacker)
+AND
+QRY_OnlyOnce("CHA_Boulder_AttackerAssigned")
+THEN
+NOT DB_CHA_BoulderAttacker(NULL_00000000-0000-0000-0000-000000000000);
+DB_CHA_BoulderAttacker(_Attacker);
+
+PROC
+PROC_CHA_DestroyPillar((CHARACTER)_Attacker)
+AND
+QRY_OnlyOnce("CHA_PillarFall")
+THEN
+SetGravity(S_CHA_OUTSIDE_Fissure_Boulder, GRAVITYTYPE.Enabled);
+PlaySound(S_CHA_OUTSIDE_Fissure_Boulder, "SE_S_CHA_OUTSIDE_Fissure_Boulder_Fall");
+
+PROC
+PROC_CHA_DestroyPillar((CHARACTER)_Attacker)
+AND
+IsDestroyed(CHA_OUTSIDE_Fissure_GrapplingVines_001_c64eb1e0-cb5a-46a6-af3f-7bf2b2505e84, 0)
+THEN
+Die((ITEM)CHA_OUTSIDE_Fissure_GrapplingVines_001_c64eb1e0-cb5a-46a6-af3f-7bf2b2505e84);
+
+//Case the boulder falls on the platform
+IF
+Fell(S_CHA_OUTSIDE_Fissure_Boulder, _)
+AND
+IsInTrigger(S_CHA_OUTSIDE_Fissure_Boulder, S_CHA_Outside_BoulderTrigger_302cbb0d-fea6-493d-b997-baa10b3e607d, 1)
+THEN
+PROC_CHA_BoulderImpact();
+DestroyPlatform(S_PLT_CHA_OUTSIDE_FissureFloor_ee993520-86b7-4d75-a66d-818d9aeb4398);
+
+//Case for heavy object on top of it
+IF
+DualEntityEvent(_, _, "CHA_Outside_HeavyObjectOnPlatform")
+THEN
+DestroyPlatform(S_PLT_CHA_OUTSIDE_FissureFloor_ee993520-86b7-4d75-a66d-818d9aeb4398);
+
+//Pillar aboveground animation
+PROC
+PROC_CHA_BoulderImpact()
+THEN
+SetFlag((FLAG)CHA_Outside_State_Debris_PillarFell_43c4727c-62fe-6361-9cd2-c9cdd677aca4, NULL_00000000-0000-0000-0000-000000000000, 0); // flagType: Global
+PlayEffect(S_CHA_Outside_BoulderImpactFX_34ad3704-84c3-4bed-8493-a5eae5cd2a1b, (EFFECTRESOURCE)VFX_Script_Chapel_Outside_Boulder_Impact_Floor_01_c921db60-ed5f-42dd-2f78-2181b8686a2d);
+TriggerLaunchIterator(S_CHA_OUTSIDE_Fissure_DamageTrigger, "CHA_Outside_CheckDestructionAbove", "");
+TriggerUnregisterForItems(S_CHA_Outside_HoleTrigger);
+TriggerUnregisterForItems(S_CHA_OUTSIDE_Fissure_DamageTrigger);
+TriggerUnregisterForItems(S_CHA_FL1_Fissure_DamageTrigger);
+SetEntityEvent(S_CHA_OUTSIDE_Fissure_Boulder, "CHA_Outside_State_DebrisPillarImpact", 1);
+
+IF 
+PlatformDestroyed(S_PLT_CHA_OUTSIDE_FissureFloor_ee993520-86b7-4d75-a66d-818d9aeb4398)
+THEN
+SetEntityEvent(S_CHA_FL1_Fissure_Boulder_000_a27427a2-cc8f-4f82-b611-ea11457d2ba9, "CHA_Outside_Event_SendToCrash", 1);
+SetOnStage(S_CHA_OUTSIDE_Fissure_Crack, 0);
+SetOnStage(S_CHA_FL1_FissureFloor_ShadowProxy_9ef96ad1-e324-4e51-bf9c-810b1206d651, 0);
+SetOnStage(S_CHA_FL1_FissureFloor_5c6af29d-dce4-43c8-8192-ad4493a3297a, 1);
+
+IF
+PlatformDestroyed(S_PLT_CHA_OUTSIDE_FissureFloor_ee993520-86b7-4d75-a66d-818d9aeb4398)
+THEN
+DB_CHA_Chapel_RegisterPlatformDestroyedCrime(1);
+
+IF
+DB_CHA_Chapel_RegisterPlatformDestroyedCrime(1)
+AND
+DB_InRegion(_Char, S_CHA_Crypt_SUB_001_f8bc812e-1cb3-46bd-942a-9f572f66ef16)
+AND
+DB_PartyMembers(_Char)
+AND
+QRY_OnlyOnce("CHA_PlatformDestroyedCrimeRegistered")
+AND
+GetPosition(S_CHA_FL1_Fissure_EntranceTrigger_95e04f48-346c-4747-a0fd-598535a8f642, _X, _Y, _Z)
+AND
+CrimeGetNewID(_CrimeID)
+THEN
+NOT DB_CHA_Chapel_RegisterPlatformDestroyedCrime(1);
+DB_CRIME_CrimeInvestigationPos(_CrimeID, _X, _Y, _Z);
+DB_CHA_PlatformDestroyedCrime(_CrimeID);
+PROC_CharacterRegisterCrimeWithPosition(_Char, "CHA_Chapel_PlatformDestroyed", NULL_00000000-0000-0000-0000-000000000000, _X, _Y, _Z, NULL_00000000-0000-0000-0000-000000000000, _CrimeID);
+
+IF
+OnCrimeInvestigatorSwitchedState(_CrimeID, _Investigator, _, "Idle")
+AND
+DB_CHA_PlatformDestroyedCrime(_CrimeID)
+THEN
+SetEntityEvent(_Investigator, "ClearPeaceReturn", 1);
+
+PROC
+PROC_CharacterRegisterCrime_Success(_, "CHA_Chapel_PlatformDestroyed", _, _, _, _CrimeID)
+THEN
+CrimeIgnoreCrime(_CrimeID, S_CHA_FL1_BanditGuard_4000f859-71fe-49ef-8400-da44b6fef92a);
+
+//Pillar Underground
+PROC
+PROC_CHA_BoulderImpact_Underground()
+THEN
+SetOnStage(S_CHA_FL1_Fissure_Boulder_000_a27427a2-cc8f-4f82-b611-ea11457d2ba9, 1);
+PROC_CameraShakeAroundObject(S_CHA_FL1_Fissure_Boulder_000_a27427a2-cc8f-4f82-b611-ea11457d2ba9, 100, 30.0);
+PROC_TriggerRegisterForPlayers(S_CHA_BanditsCrashBanter_580dea55-345e-4681-8164-8d62ebcd809a);
+PROC_SetRelationToPlayers((FACTION)ACT1_CHA_GraveDiggersInside_5bc81140-3a1b-4d5b-b886-26c3d762fa0b, 0);
+
+// If no party member is in the floor where the bandits are, teleport
+IF
+WentOnStage(S_CHA_FL1_Fissure_Boulder_000_a27427a2-cc8f-4f82-b611-ea11457d2ba9, 1)
+AND
+NOT QRY_TriggerEvents_AnyPartyMemberInTrigger(S_CHA_FL1_Fissure_BoulderPartyTrigger)
+THEN
+TeleportTo(S_CHA_FL1_Fissure_Boulder_000_a27427a2-cc8f-4f82-b611-ea11457d2ba9, S_CHA_FL1_Fissure_TeleportBoulderTo_149bd9eb-eca9-48ad-8a9a-bf86d4423098);
+
+IF
+WentOnStage(S_CHA_FL1_Fissure_Boulder_000_a27427a2-cc8f-4f82-b611-ea11457d2ba9, 1)
+THEN
+PROC_TriggerUnregisterForParty(S_CHA_FL1_Fissure_BoulderPartyTrigger);
+
+// As soon as it is set on stage destroy it
+IF
+WentOnStage(S_CHA_FL1_FissureFloor_5c6af29d-dce4-43c8-8192-ad4493a3297a, 1)
+THEN
+Die(S_CHA_FL1_FissureFloor_5c6af29d-dce4-43c8-8192-ad4493a3297a, DEATHTYPE.Physical, 0);
+//END_REGION
+
+//REGION Iterator from fall : what happens to stuffs on the path of the boulder
+//If the player is underneath the falling area then the player takes damage from the collision
+IF
+EntityEvent(_Char, "CHA_Outside_CheckDestructionAbove")
+AND
+NOT DB_Dead((CHARACTER)_Char)
+THEN
+PROC_CHA_DamagedByBoulder((GUIDSTRING)_Char);
+ObjectTimerLaunch(_Char, "CHA_Outside_CheckDeadFromPillar", 500);
+
+IF
+EntityEvent(_Char, "CHA_Outside_CheckDestructionAbove")
+AND
+GetFaction(_Char, _Faction)
+AND
+GetClosestPlayer(_Char, _Player, _)
+AND
+NOT DB_PartyMembers((CHARACTER)_Char)
+THEN
+PROC_SetHostileToIndivPlayerFaction(_Faction, _Player);
+
+IF
+ObjectTimerFinished(_Char, "CHA_Outside_CheckDeadFromPillar")
+AND
+DB_CHA_OutsideBandits((CHARACTER)_Char)
+AND
+DB_Dead(_Char)
+THEN
+SetFlag(CHA_Outside_State_BanditGotCrushed_fa9d040b-5eeb-4968-a6b3-2f47b644ddd4, NULL_00000000-0000-0000-0000-000000000000);
+
+//If a character or an object is over the hole when the pillar fall, it end up inside the crypt
+IF
+EntityEvent(_Object, "CHA_Outside_CheckFallingBodies")
+AND
+_Object != S_CHA_OUTSIDE_Fissure_Boulder
+AND
+GetPosition(_Object, _ObjectX, _ObjectY, _ObjectZ)
+AND
+GetPosition(S_CHA_Outside_HoleTrigger, _InX, _InY, _InZ)
+AND
+GetPosition(S_CHA_FL1_Fissure_EntranceTrigger_95e04f48-346c-4747-a0fd-598535a8f642, _OutX, _OutY, _OutZ)
+AND //Computation of: _CharPosition - _InPosition + _OutPosition
+RealSum(_ObjectX, _OutX, _InterX)
+AND
+RealSubtract(_InterX, _InX, _EndX)
+AND
+RealSum(_ObjectY, _OutY, _InterY)
+AND
+RealSubtract(_InterY, _InY, _EndY)
+AND
+RealSum(_ObjectZ, _OutZ, _InterZ)
+AND
+RealSubtract(_InterZ, _InZ, _EndZ)
+THEN
+TeleportToPosition(_Object, _EndX, _EndY, _EndZ, "CHA_FalledFromPillarCrash", 0, 0, 1);
+
+IF
+EntityEvent(_Item, "CHA_FalledFromPillarCrash")
+AND
+DB_CHA_ItemOverHole((ITEM)_Item)
+THEN
+PROC_CHA_DamagedByBoulder(_Item);
+
+PROC
+PROC_CHA_DamagedByBoulder((GUIDSTRING) _Object)
+AND
+DB_CHA_BoulderAttacker(_Attacker)
+THEN
+ApplyDamage(_Object, 50, "Physical", _Attacker);
+//END_REGION
+
+//REGION Jumping into the hole the boulder made
+IF
+EnteredTrigger(_Char, S_CHA_OUTSIDE_ChapelJump_a6639952-28a3-437b-99db-5ece12e702d8)
+AND
+NOT DB_Is_InCombat(_Char, _)
+THEN
+TeleportTo(_Char, S_CHA_FL1_Fissure_EntranceTrigger_95e04f48-346c-4747-a0fd-598535a8f642, "", 1, 1, 1);
+SetCombatGroupID(_Char, "");
+
+IF
+EnteredTrigger(_Char, S_CHA_OUTSIDE_ChapelJump_a6639952-28a3-437b-99db-5ece12e702d8)
+AND
+DB_Is_InCombat(_Char, _)
+THEN
+TeleportTo(_Char, S_CHA_FL1_Fissure_EntranceTrigger_95e04f48-346c-4747-a0fd-598535a8f642, "", 0, 0, 1);
+SetCombatGroupID(_Char, "");
+
+IF
+ItemEnteredTrigger(_Item, S_CHA_OUTSIDE_ChapelJump_a6639952-28a3-437b-99db-5ece12e702d8, _)
+AND
+_Item != S_CHA_OUTSIDE_Fissure_Boulder
+AND
+Exists(_Item,1)
+THEN
+TeleportTo(_Item, S_CHA_FL1_Fissure_EntranceTrigger_95e04f48-346c-4747-a0fd-598535a8f642, "", 0, 0, 1);
+
+IF
+ItemEnteredTrigger(S_CHA_OUTSIDE_Fissure_Boulder, S_CHA_OUTSIDE_ChapelJump_a6639952-28a3-437b-99db-5ece12e702d8, _)
+THEN
+SetOnStage(S_CHA_OUTSIDE_Fissure_Boulder, 0);
+PROC_CHA_BoulderImpact_Underground();
+//END_REGION
+```

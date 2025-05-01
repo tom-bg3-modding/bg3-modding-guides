@@ -1,0 +1,15 @@
+site: 
+  title: BG3 Modding Guides
+  url: https://Tom-Project-Strahd.github.io/modding-guide/
+  start_page: devlogs:ROOT:index.adoc
+
+content:
+  sources:
+  - url: .
+    branches: HEAD
+    start_path: devlogs
+
+ui:
+  bundle:
+    url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable
+    snapshot: true

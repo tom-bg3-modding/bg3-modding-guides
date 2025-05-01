@@ -1,0 +1,5 @@
+# An Introduction to OSIRIS Scripting
+
+## What the heck is OSIRIS?
+
+Osiris is a proprietary programming language developed and used by Larian Studios 
