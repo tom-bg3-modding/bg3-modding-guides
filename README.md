@@ -1,3 +1,17 @@
 # Project Strahd Modding Guides
 
-TODO: Antora install proc
+Source code for my Project Strahd docs site.
+
+## Installation
+
+1. Install [Antora](https://docs.antora.org/antora/latest/install-and-run-quickstart/).
+2. Build the UI
+    1. `cd ui`
+    2. `npm install`
+    3. `npx gulp bundle`
+
+3. Build the Local Site:
+    ```
+    cd ..
+    npx antora antora-playbook.yml
+    ```

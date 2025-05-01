@@ -6,7 +6,7 @@ At the top of this temple are 3 NPCs who will try and stop you going inside.
 Near their little camp outside, there is a boulder hanging on a rope above a cracked floor.
 You can shoot this rope to drop the boulder onto them, breaking the floor and opening a way into the temple.
 
-image::assets/boulderTrap_ingame.png[]
+image::boulderTrap_ingame.png[]
 
 Simple right? No.
 
@@ -16,10 +16,10 @@ Here I'm going to break down the code to show how Larian implemented this, and m
 
 In the game world, there are a couple of game objects that allow this sequence to play out:
 
-. [#boulder]#S_CHA_FL1_Fissure_Boulder# - 
-. S_CHA_FL1_FissureFloor - 
-. [#hole-trigger]#S_CHA_Outside_HoleTrigger# - A box trigger placed directly over where the hole appears
-. [#damage-trigger]#S_CHA_OUTSIDE_Fissure_DamageTrigger# - A box trigger placed inside the hole down to the chapel.
+. [#boulder]#`S_CHA_FL1_Fissure_Boulder`# - 
+. `S_CHA_FL1_FissureFloor`` - 
+. [#hole-trigger]#`S_CHA_Outside_HoleTrigger`# - A box trigger placed directly over where the hole appears
+. [#damage-trigger]#`S_CHA_OUTSIDE_Fissure_DamageTrigger`# - A box trigger placed inside the hole down to the chapel.
 
 ## Scripting code
 
@@ -165,6 +165,8 @@ SetCombatGroupID(_Bandit, "CHA_CorridorEncounter");
 //END_REGION
 ----
 
+[source, OSIRIS]
+----
 //REGION The NEW Fall
 // Boulder directly attacked
 IF
@@ -372,7 +374,10 @@ DB_CHA_BoulderAttacker(_Attacker)
 THEN
 ApplyDamage(_Object, 50, "Physical", _Attacker);
 //END_REGION
+----
 
+[source, OSIRIS]
+----
 //REGION Jumping into the hole the boulder made
 IF
 EnteredTrigger(_Char, S_CHA_OUTSIDE_ChapelJump_a6639952-28a3-437b-99db-5ece12e702d8)
@@ -405,4 +410,4 @@ THEN
 SetOnStage(S_CHA_OUTSIDE_Fissure_Boulder, 0);
 PROC_CHA_BoulderImpact_Underground();
 //END_REGION
-```
+----
