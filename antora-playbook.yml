@@ -1,6 +1,6 @@
 site: 
   title: BG3 Modding Guides
-  url: https://tom-project-strahd.github.io
+  url: https://tom-project-strahd.github.io/project-strahd-modding-guides/devlogs/index.html
   start_page: devlogs:ROOT:index.adoc
 
 content:
