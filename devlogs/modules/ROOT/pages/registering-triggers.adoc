@@ -1,7 +1,11 @@
 # Registering Triggers
 
-Triggers are incredibly common 
+WIP
+
+Triggers are a 
 
 Generally, an area trigger sends an event when something is in it.
 We specify what exactly is in it by registering that trigger.
 
+IMPORTANT: You do not need to register event triggers.
+They are registered automatically to all xref:entity-types.adoc#_characters[characters] and xref:entity-types.adoc#_items[items].

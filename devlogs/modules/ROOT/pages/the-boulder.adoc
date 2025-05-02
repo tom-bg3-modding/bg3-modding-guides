@@ -216,7 +216,7 @@ PROC_CHA_DestroyPillar((CHARACTER)_AttackOwner);
 
 // Vines
 IF
-DestroyedBy(S_CHA_OUTSIDE_Fissure_GrapplingVines_001_c64eb1e0-cb5a-46a6-af3f-7bf2b2505e84, _, _DestroyerOwner, _)
+DestroyedBy(S_CHA_OUTSIDE_Fissure_GrapplingVines_001, _, _DestroyerOwner, _)
 THEN
 PROC_CHA_DestroyPillar(_DestroyerOwner);
 
@@ -239,31 +239,31 @@ PlaySound(S_CHA_OUTSIDE_Fissure_Boulder, "SE_S_CHA_OUTSIDE_Fissure_Boulder_Fall"
 PROC
 PROC_CHA_DestroyPillar((CHARACTER)_Attacker)
 AND
-IsDestroyed(CHA_OUTSIDE_Fissure_GrapplingVines_001_c64eb1e0-cb5a-46a6-af3f-7bf2b2505e84, 0)
+IsDestroyed(CHA_OUTSIDE_Fissure_GrapplingVines_001, 0)
 THEN
-Die((ITEM)CHA_OUTSIDE_Fissure_GrapplingVines_001_c64eb1e0-cb5a-46a6-af3f-7bf2b2505e84);
+Die((ITEM)CHA_OUTSIDE_Fissure_GrapplingVines_001);
 
 //Case the boulder falls on the platform
 IF
 Fell(S_CHA_OUTSIDE_Fissure_Boulder, _)
 AND
-IsInTrigger(S_CHA_OUTSIDE_Fissure_Boulder, S_CHA_Outside_BoulderTrigger_302cbb0d-fea6-493d-b997-baa10b3e607d, 1)
+IsInTrigger(S_CHA_OUTSIDE_Fissure_Boulder, S_CHA_Outside_BoulderTrigger, 1)
 THEN
 PROC_CHA_BoulderImpact();
-DestroyPlatform(S_PLT_CHA_OUTSIDE_FissureFloor_ee993520-86b7-4d75-a66d-818d9aeb4398);
+DestroyPlatform(S_PLT_CHA_OUTSIDE_FissureFloor);
 
 //Case for heavy object on top of it
 IF
 DualEntityEvent(_, _, "CHA_Outside_HeavyObjectOnPlatform")
 THEN
-DestroyPlatform(S_PLT_CHA_OUTSIDE_FissureFloor_ee993520-86b7-4d75-a66d-818d9aeb4398);
+DestroyPlatform(S_PLT_CHA_OUTSIDE_FissureFloor);
 
 //Pillar aboveground animation
 PROC
 PROC_CHA_BoulderImpact()
 THEN
-SetFlag((FLAG)CHA_Outside_State_Debris_PillarFell_43c4727c-62fe-6361-9cd2-c9cdd677aca4, NULL_00000000-0000-0000-0000-000000000000, 0); // flagType: Global
-PlayEffect(S_CHA_Outside_BoulderImpactFX_34ad3704-84c3-4bed-8493-a5eae5cd2a1b, (EFFECTRESOURCE)VFX_Script_Chapel_Outside_Boulder_Impact_Floor_01_c921db60-ed5f-42dd-2f78-2181b8686a2d);
+SetFlag((FLAG)CHA_Outside_State_Debris_PillarFell, NULL_00000000-0000-0000-0000-000000000000, 0); // flagType: Global
+PlayEffect(S_CHA_Outside_BoulderImpactFX_34ad3704-84c3-4bed-8493-a5eae5cd2a1b, (EFFECTRESOURCE)VFX_Script_Chapel_Outside_Boulder_Impact_Floor_01);
 TriggerLaunchIterator(S_CHA_OUTSIDE_Fissure_DamageTrigger, "CHA_Outside_CheckDestructionAbove", "");
 TriggerUnregisterForItems(S_CHA_Outside_HoleTrigger);
 TriggerUnregisterForItems(S_CHA_OUTSIDE_Fissure_DamageTrigger);
@@ -271,28 +271,28 @@ TriggerUnregisterForItems(S_CHA_FL1_Fissure_DamageTrigger);
 SetEntityEvent(S_CHA_OUTSIDE_Fissure_Boulder, "CHA_Outside_State_DebrisPillarImpact", 1);
 
 IF 
-PlatformDestroyed(S_PLT_CHA_OUTSIDE_FissureFloor_ee993520-86b7-4d75-a66d-818d9aeb4398)
+PlatformDestroyed(S_PLT_CHA_OUTSIDE_FissureFloor)
 THEN
-SetEntityEvent(S_CHA_FL1_Fissure_Boulder_000_a27427a2-cc8f-4f82-b611-ea11457d2ba9, "CHA_Outside_Event_SendToCrash", 1);
+SetEntityEvent(S_CHA_FL1_Fissure_Boulder_000, "CHA_Outside_Event_SendToCrash", 1);
 SetOnStage(S_CHA_OUTSIDE_Fissure_Crack, 0);
-SetOnStage(S_CHA_FL1_FissureFloor_ShadowProxy_9ef96ad1-e324-4e51-bf9c-810b1206d651, 0);
-SetOnStage(S_CHA_FL1_FissureFloor_5c6af29d-dce4-43c8-8192-ad4493a3297a, 1);
+SetOnStage(S_CHA_FL1_FissureFloor_ShadowProxy, 0);
+SetOnStage(S_CHA_FL1_FissureFloor, 1);
 
 IF
-PlatformDestroyed(S_PLT_CHA_OUTSIDE_FissureFloor_ee993520-86b7-4d75-a66d-818d9aeb4398)
+PlatformDestroyed(S_PLT_CHA_OUTSIDE_FissureFloor)
 THEN
 DB_CHA_Chapel_RegisterPlatformDestroyedCrime(1);
 
 IF
 DB_CHA_Chapel_RegisterPlatformDestroyedCrime(1)
 AND
-DB_InRegion(_Char, S_CHA_Crypt_SUB_001_f8bc812e-1cb3-46bd-942a-9f572f66ef16)
+DB_InRegion(_Char, S_CHA_Crypt_SUB_001)
 AND
 DB_PartyMembers(_Char)
 AND
 QRY_OnlyOnce("CHA_PlatformDestroyedCrimeRegistered")
 AND
-GetPosition(S_CHA_FL1_Fissure_EntranceTrigger_95e04f48-346c-4747-a0fd-598535a8f642, _X, _Y, _Z)
+GetPosition(S_CHA_FL1_Fissure_EntranceTrigger, _X, _Y, _Z)
 AND
 CrimeGetNewID(_CrimeID)
 THEN
@@ -311,27 +311,27 @@ SetEntityEvent(_Investigator, "ClearPeaceReturn", 1);
 PROC
 PROC_CharacterRegisterCrime_Success(_, "CHA_Chapel_PlatformDestroyed", _, _, _, _CrimeID)
 THEN
-CrimeIgnoreCrime(_CrimeID, S_CHA_FL1_BanditGuard_4000f859-71fe-49ef-8400-da44b6fef92a);
+CrimeIgnoreCrime(_CrimeID, S_CHA_FL1_BanditGuard);
 
 //Pillar Underground
 PROC
 PROC_CHA_BoulderImpact_Underground()
 THEN
-SetOnStage(S_CHA_FL1_Fissure_Boulder_000_a27427a2-cc8f-4f82-b611-ea11457d2ba9, 1);
-PROC_CameraShakeAroundObject(S_CHA_FL1_Fissure_Boulder_000_a27427a2-cc8f-4f82-b611-ea11457d2ba9, 100, 30.0);
-PROC_TriggerRegisterForPlayers(S_CHA_BanditsCrashBanter_580dea55-345e-4681-8164-8d62ebcd809a);
-PROC_SetRelationToPlayers((FACTION)ACT1_CHA_GraveDiggersInside_5bc81140-3a1b-4d5b-b886-26c3d762fa0b, 0);
+SetOnStage(S_CHA_FL1_Fissure_Boulder_000, 1);
+PROC_CameraShakeAroundObject(S_CHA_FL1_Fissure_Boulder_000, 100, 30.0);
+PROC_TriggerRegisterForPlayers(S_CHA_BanditsCrashBanter);
+PROC_SetRelationToPlayers((FACTION)ACT1_CHA_GraveDiggersInside, 0);
 
 // If no party member is in the floor where the bandits are, teleport
 IF
-WentOnStage(S_CHA_FL1_Fissure_Boulder_000_a27427a2-cc8f-4f82-b611-ea11457d2ba9, 1)
+WentOnStage(S_CHA_FL1_Fissure_Boulder_000, 1)
 AND
 NOT QRY_TriggerEvents_AnyPartyMemberInTrigger(S_CHA_FL1_Fissure_BoulderPartyTrigger)
 THEN
-TeleportTo(S_CHA_FL1_Fissure_Boulder_000_a27427a2-cc8f-4f82-b611-ea11457d2ba9, S_CHA_FL1_Fissure_TeleportBoulderTo_149bd9eb-eca9-48ad-8a9a-bf86d4423098);
+TeleportTo(S_CHA_FL1_Fissure_Boulder_000, S_CHA_FL1_Fissure_TeleportBoulderTo);
 
 IF
-WentOnStage(S_CHA_FL1_Fissure_Boulder_000_a27427a2-cc8f-4f82-b611-ea11457d2ba9, 1)
+WentOnStage(S_CHA_FL1_Fissure_Boulder_000, 1)
 THEN
 PROC_TriggerUnregisterForParty(S_CHA_FL1_Fissure_BoulderPartyTrigger);
 
@@ -370,7 +370,7 @@ DB_CHA_OutsideBandits((CHARACTER)_Char)
 AND
 DB_Dead(_Char)
 THEN
-SetFlag(CHA_Outside_State_BanditGotCrushed_fa9d040b-5eeb-4968-a6b3-2f47b644ddd4, NULL_00000000-0000-0000-0000-000000000000);
+SetFlag(CHA_Outside_State_BanditGotCrushed, NULL_00000000-0000-0000-0000-000000000000);
 
 //If a character or an object is over the hole when the pillar fall, it end up inside the crypt
 IF
@@ -382,7 +382,7 @@ GetPosition(_Object, _ObjectX, _ObjectY, _ObjectZ)
 AND
 GetPosition(S_CHA_Outside_HoleTrigger, _InX, _InY, _InZ)
 AND
-GetPosition(S_CHA_FL1_Fissure_EntranceTrigger_95e04f48-346c-4747-a0fd-598535a8f642, _OutX, _OutY, _OutZ)
+GetPosition(S_CHA_FL1_Fissure_EntranceTrigger, _OutX, _OutY, _OutZ)
 AND //Computation of: _CharPosition - _InPosition + _OutPosition
 RealSum(_ObjectX, _OutX, _InterX)
 AND
@@ -414,36 +414,38 @@ ApplyDamage(_Object, 50, "Physical", _Attacker);
 //END_REGION
 ----
 
+This region deals with the player jumping into the hole.
+
 [source, OSIRIS]
 ----
 //REGION Jumping into the hole the boulder made
 IF
-EnteredTrigger(_Char, S_CHA_OUTSIDE_ChapelJump_a6639952-28a3-437b-99db-5ece12e702d8)
+EnteredTrigger(_Char, S_CHA_OUTSIDE_ChapelJump)
 AND
 NOT DB_Is_InCombat(_Char, _)
 THEN
-TeleportTo(_Char, S_CHA_FL1_Fissure_EntranceTrigger_95e04f48-346c-4747-a0fd-598535a8f642, "", 1, 1, 1);
+TeleportTo(_Char, S_CHA_FL1_Fissure_EntranceTrigger, "", 1, 1, 1);
 SetCombatGroupID(_Char, "");
 
 IF
-EnteredTrigger(_Char, S_CHA_OUTSIDE_ChapelJump_a6639952-28a3-437b-99db-5ece12e702d8)
+EnteredTrigger(_Char, S_CHA_OUTSIDE_ChapelJump)
 AND
 DB_Is_InCombat(_Char, _)
 THEN
-TeleportTo(_Char, S_CHA_FL1_Fissure_EntranceTrigger_95e04f48-346c-4747-a0fd-598535a8f642, "", 0, 0, 1);
+TeleportTo(_Char, S_CHA_FL1_Fissure_EntranceTrigger, "", 0, 0, 1);
 SetCombatGroupID(_Char, "");
 
 IF
-ItemEnteredTrigger(_Item, S_CHA_OUTSIDE_ChapelJump_a6639952-28a3-437b-99db-5ece12e702d8, _)
+ItemEnteredTrigger(_Item, S_CHA_OUTSIDE_ChapelJump, _)
 AND
 _Item != S_CHA_OUTSIDE_Fissure_Boulder
 AND
 Exists(_Item,1)
 THEN
-TeleportTo(_Item, S_CHA_FL1_Fissure_EntranceTrigger_95e04f48-346c-4747-a0fd-598535a8f642, "", 0, 0, 1);
+TeleportTo(_Item, S_CHA_FL1_Fissure_EntranceTrigger, "", 0, 0, 1);
 
 IF
-ItemEnteredTrigger(S_CHA_OUTSIDE_Fissure_Boulder, S_CHA_OUTSIDE_ChapelJump_a6639952-28a3-437b-99db-5ece12e702d8, _)
+ItemEnteredTrigger(S_CHA_OUTSIDE_Fissure_Boulder, S_CHA_OUTSIDE_ChapelJump, _)
 THEN
 SetOnStage(S_CHA_OUTSIDE_Fissure_Boulder, 0);
 PROC_CHA_BoulderImpact_Underground();

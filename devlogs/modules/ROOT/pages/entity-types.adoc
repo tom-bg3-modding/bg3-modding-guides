@@ -1,0 +1,35 @@
+# Entity Types
+
+WIP
+
+## Items
+
+## Scenery
+
+## Characters
+
+## Triggers
+
+## Lights
+
+## Light Probes
+
+## Prefabs
+
+## Decals
+
+## Splines
+
+## Constructions
+
+Also called Wall Constructions
+
+## Dummies
+
+## Projectiles
+
+## Surfaces
+
+## References
+
+## Level Templates
