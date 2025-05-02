@@ -1,7 +1,7 @@
 # Project Strahd Modding Guides
 
-WIP - SITE NOT UP (link will be here eventually)
 Source code for my Project Strahd docs site.
+[Built Site](https://tom-project-strahd.github.io/project-strahd-modding-guides/devlogs/index.html)
 
 ## Installation
 
