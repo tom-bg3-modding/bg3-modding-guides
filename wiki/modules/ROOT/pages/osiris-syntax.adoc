@@ -1,0 +1,19 @@
+# OSIRIS Syntax
+
+WIP
+
+## Rules
+
+## Databases
+
+## Procedures
+
+## Queries
+
+## Events
+
+## Comparisons
+
+## Actions
+
+### Calls

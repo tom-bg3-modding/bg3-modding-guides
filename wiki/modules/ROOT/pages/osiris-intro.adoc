@@ -2,4 +2,102 @@
 
 ## What the heck is OSIRIS?
 
-Osiris is a proprietary programming language developed and used by Larian Studios 
+Osiris is a proprietary programming language developed and used by Larian Studios.
+It's the primary language used to implement game logic. 
+You can think of the game world as an otherwise static object, with Osiris being the tool used to influence it.
+
+Osiris is a bit different to programming languages you might be used to.
+Unlike say, Java or Python, Osiris is a _declarative_ language.
+This means it's highly abstract, with code focussing more on what is supposed to happen rather than how to implement it.
+
+This abstraction is due to the fact Osiris relies almost entirely on API connections to the Divinity Engine (what BG3 is built on).
+These connections let Osiris code know what's going on in the game world, and influence the game world in return.
+There's 3 kinds of API connection:
+
+. link:https://docs.baldursgate3.game/index.php?title=Category:Osiris_Events[Events] - Things that have happened in the world
+. https://docs.baldursgate3.game/index.php?title=Category:Osiris_Queries[Queries] - Asking about the state of the world
+. https://docs.baldursgate3.game/index.php?title=Category:Osiris_Calls[Calls] - Changing the state of the world
+
+The entire logic for a game is one big program, called a _story_.
+The story is then broken down into smaller sections, called _goals_.
+A goal is a section a logic that deals with related game events.
+For instance, everything that happens in the fight outside the Emerald Grove in Act 1 is handled by one goal.
+
+Goals are related to each other in a hierarchy.
+A goal can have sub-goals, and those sub goals can only start if their parent goal has finished running.
+Specifically, it must have executed the `GoalCompleted` action.
+For instance, the Act 2 goals cannot start until their parent goal has confirmed the player has entered Act 2.
+
+## Modifying the Story
+
+IMPORTANT: The following sections assume you are using the Baldur's Gate 3 Modding Toolkit.
+
+You can find the story for the current project by clicking the *Story Editor* button in the top toolbar:
+
+image::osiris_story_editor_button.png[]
+
+This will open the Story Editor in a separate window.
+On the left side you will be able to see all the goals for the current story.
+
+image::osiris_story_editor.png[]
+
+You can double click on a goal to open it.
+The goals with an arrow button next to them have sub-goals.
+Click on this arrow to expand the list.
+
+NOTE: You may have noticed a lot of goals begin with underscores.
+This is because Osiris executes goals in alphabetical order.
+If there is a procedure you want to use in across goals, it must be defined before you use it.
+By placing these definitions in goals with underscores, you can ensure these goals are executed first.
+
+## Structure of a Goal
+
+A goal consists of 3 sections.
+These are shown in the Story Editor by the 3 text panes.
+
+image::osiris_goal_sections.png[]
+
+### Init
+
+The `INIT` section runs as soon as the goal is initialised.
+A goal is initialised when it's parent goal finishes.
+
+### Knowledge Base (KB)
+
+The `KB` section consists of _rules_.
+A rule is a logical statement structured as an `IF ... THEN` code block.
+For example:
+
+```
+IF
+Trigger Condition <1>
+AND
+Extra Condition <2>
+THEN
+Action1;
+Action2; <3>
+```
+
+<1> The rule will wait until the trigger condition is met before executing the `THEN` block.
+A trigger condition can be an event, or detecting something has been added to a xref:osiris-syntax.adoc#databases[database].
+
+<2> Rules can have multiple conditions to meet before they execute. 
+There's slightly more freedom after the first condition, you can xref:osiris-syntax#queries[query] the game engine, use a xref:osiris-syntax#comparisons[comparison], or check something is in a xref:osiris-syntax.adoc#databases[database].
+
+<3> After all the triggers have been met, the actions are executed.
+An action could be a xref:osiris-syntax.adoc#calls[call], running a xref:osiris-syntax.adoc#procedures[procedure], editing a xref:osiris-syntax.adoc#databases[database], or finishing a goal.
+Note that actions end with a semicolon.
+
+These rules become _active_ - i.e. can be executed - once the parent goal finishes, similar to the `INIT` section.
+
+WARNING: An event can only be used as the first trigger condition.
+You can't have multiple events as triggers, or place an event after and `AND`.
+Doing this will result in a build error.
+
+### Exit
+
+The `EXIT` section runs after the goal has executed the `GoalCompleted` action.
+
+## What Next?
+
+Check out xref:osiris-syntax.adoc[Osiris Syntax] for an in-depth look at Osiris coding, or xref:the-boulder.adoc[The Boulder] for a complete breakdown of an goal used in BG3.

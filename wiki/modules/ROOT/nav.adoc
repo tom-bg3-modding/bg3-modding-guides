@@ -1,6 +1,5 @@
-* OSIRIS
+* xref:osiris-intro.adoc[OSIRIS]
 ** xref:the-boulder.adoc[]
-** xref:osiris-intro.adoc[]
 ** xref:registering-triggers.adoc[]
 
 * Reference
