@@ -8,12 +8,16 @@ Source code for my Baldur's Gate 3 Modding Toolkit docs site.
 
 1. Install [Antora](https://docs.antora.org/antora/latest/install-and-run-quickstart/).
 2. Build the UI
-    1. `cd ui`
-    2. `npm install`
-    3. `npx gulp bundle`
-    4. `cd ..`
+    ```
+    cd ui
+    npm install
+    npx gulp bundle
+    cd ..
+    ```
 
 3. Build the Local Site:
     ```
     npx antora antora-playbook.yml
     ```
+
+Updates to the GitHub Pages site are handed automatically by a GitHub workflow.
