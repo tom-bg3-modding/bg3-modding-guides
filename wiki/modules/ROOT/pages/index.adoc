@@ -1,0 +1,8 @@
+= Landing Page
+
+Hello!
+
+Here you'll find some guides and explanations about modding BG3 using the BG3 Modding Toolkit.
+As they both use the Divinity Engine, a lot of what's here is relevant to the Divinity Original Sin games too.
+
+IMPORTANT: All content on this site is from my own research, and is not official in any way for anything.

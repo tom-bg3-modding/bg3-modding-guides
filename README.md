@@ -1,8 +1,8 @@
-# Project Strahd Modding Guides
+# Tom's Personal BG3 Modding Wiki
 
-Source code for my Project Strahd docs site.
+Source code for my Baldur's Gate 3 Modding Toolkit docs site.
 
-[Built Site](https://tom-project-strahd.github.io/project-strahd-modding-guides/devlogs/index.html)
+[Built Site](https://tom-project-strahd.github.io/project-strahd-modding-guides/wiki/index.html)
 
 ## Development Installation
 
@@ -11,9 +11,9 @@ Source code for my Project Strahd docs site.
     1. `cd ui`
     2. `npm install`
     3. `npx gulp bundle`
+    4. `cd ..`
 
 3. Build the Local Site:
     ```
-    cd ..
     npx antora antora-playbook.yml
     ```

@@ -1,4 +1,0 @@
-= Landing Page
-
-IMPORTANT: This site is not endorsed by the Project Strahd mod team, nor does it contain any content from the mod. 
-It exists primarily as a resource for developers to learn about how to mod Baldur's Gate 3.

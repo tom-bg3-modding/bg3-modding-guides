@@ -1,5 +1,5 @@
-name: devlogs
-title: Devlogs
+name: wiki
+title: Wiki
 version: ~
 nav:
   - modules/ROOT/nav.adoc

@@ -1,13 +1,14 @@
 site: 
-  title: BG3 Modding Guides
-  url: https://tom-project-strahd.github.io/project-strahd-modding-guides/devlogs/index.html
-  start_page: devlogs:ROOT:index.adoc
+  title: Tom's BG3 Modding Wiki
+  url: https://tom-project-strahd.github.io/project-strahd-modding-guides/
+  robots: disallow
+  start_page: wiki:ROOT:index.adoc
 
 content:
   sources:
   - url: .
     branches: HEAD
-    start_path: devlogs
+    start_path: wiki
 
 ui:
   bundle:
