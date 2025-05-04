@@ -2,7 +2,7 @@
 
 Source code for my Baldur's Gate 3 Modding Toolkit docs site.
 
-[Built Site](https://tom-project-strahd.github.io/project-strahd-modding-guides/wiki/index.html)
+[Built Site](https://tom-bg3-modding.github.io/bg3-modding-guides/wiki/index.html)
 
 ## Development Installation
 

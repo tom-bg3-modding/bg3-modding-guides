@@ -1,6 +1,6 @@
 site: 
   title: Tom's BG3 Modding Wiki
-  url: https://tom-project-strahd.github.io/project-strahd-modding-guides/
+  url: https://tom-bg3-modding.github.io/bg3-modding-guides/
   robots: disallow
   start_page: wiki:ROOT:index.adoc
 
