@@ -2,5 +2,9 @@
 ** xref:the-boulder.adoc[]
 ** xref:registering-triggers.adoc[]
 
+* How-to
+** xref:collapsing-floor.adoc[]
+** xref:light-off.adoc[]
+
 * Reference
 ** xref:entity-types.adoc[]

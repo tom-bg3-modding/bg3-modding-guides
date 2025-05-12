@@ -1,0 +1,70 @@
+:experimental:
+
+# Making a Collapsing Floor
+
+WIP
+
+A common trap in D&D is the hidden pit.
+The mechanism is quite simple - a character walks over a weak floor, it breaks, and they fall into the pit.
+
+Unfortunately this kind of trap is quite rare in BG3.
+
+## The Pit
+
+We're going to start by creating the pit.
+This will look different depending on your environment, but in general just just need to make a fairly steep hole in the ground.
+Refer to xref::landscaping.adoc[landscaping] for information on how to edit terrain. 
+
+For context here's what my testing level looks like:
+
+image::pit_example_setup.png[]
+
+## The Floor
+
+Let's make the object that will collapse into the pit when the player walks on it.
+This will be a level template, as its AI grid is stored separately from the level it is in.
+This allows us to add and remove a walkable surface from the world, which lets the player fall into the pit.
+
+### Creating the Floor Itself
+
+Create a new level using kbd:[Ctrl+N]. 
+I recommend always starting with `Basic_Level_A`. 
+Name the level what you want to call the platform object.
+
+image::pit_new_level.png[]
+
+Place down a single walkable object.
+In my case, I chose `BLD_GEN_Scaffolding_Wood_B_Platform_A`.
+
+This platform is a xref:entity-types.adoc#_scenery[scenery] object - meaning it's static within the world.
+This means it's added the the AI grid - and the player can walk over it like anything else in the level.
+Make sure the `Walk On` attribute is the sidebar is checked, and add an AI seeder on top of it to instantiate the AI grid.
+Delete everything else in the level except the seeder and platform (this includes the light probe and start triggers).
+Enter the game in game mode to make sure the character can walk around fine.
+
+image::pit_platform.png[]
+
+### Adding this Floor to Our Level
+
+We're now going to turn this platform into a xref:entity-types.adoc#_level_templates[Level Template].
+In the top toolbar, click Level -> Edit Level Data.
+
+image::pit_level_data_button.png[]
+
+Ensure the `Is Platform` checkbox is selected.
+This setting will allow the platform to move around and disappear - and have the AI grid update to reflect this.
+
+Now select the root templates menu.
+Click the Create New image:pit_create_new_button.png[25, 25] button in the top left to open the Create Object Wizard:
+
+. Ensure the `Select Mod` dropdown is set to your mod (it should be set to this by default).
+. Set the `Select Type` dropdown to Level Template.
+. Set the `Source Level` field to the name of the level.
+. Set the `Name` field also to the name of the level.
+
+Click `Create`.
+
+Return to the level where the trap will be.
+Open the root templates menu, select your mod in the file menu, and place the new level template.
+
+image::pit_new_
