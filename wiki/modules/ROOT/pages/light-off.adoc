@@ -11,7 +11,7 @@ Let's take the case of a candle for the rest of this guide:
 
 image::light_candle.png[]
 
-Its root template is called `CINE_LTS_DUN_Candles_Cluster_B`, and is an xref:osiris-syntax.adoc#items[item].
+Its root template is called `CINE_LTS_DUN_Candles_Cluster_B`, and is an xref:entity-types.adoc#items[item].
 Recall items are _interactable_.
 This means a player can click on them to do something - in this case light the candle, and snuff it out.
 This interaction is handled by a behaviour script, one of the Divinity Engine's many scripting languages.
