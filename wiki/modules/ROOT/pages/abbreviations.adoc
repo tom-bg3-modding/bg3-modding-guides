@@ -1,0 +1,71 @@
+# Larian Abbreviations
+
+Root Templates and Level names often contain abbreviations to help tell the developer in which context they are intended to be used.
+Following is a non exhaustive list of abbreviations used across the game.
+
+## Locations
+
+Each act has its own master level (region) that consists of a number of smaller levels.
+For instance act 1's master map is called the wilderness, but is made up of numerous levels stitched together. For instance, the Blighted Village and Emerald Grove are 2 separate levels that are placed next to each other in the Wilderness Map.
+
+### Act 1
+
+* TUT - The Nautiloid, which is the game's tutorial
+* WLD - Wilderness (Act 1 Overworld)
+* CRA - Nautiloid Crashsite
+* CHA - Chapel (Withers' Tomb)
+* DEN - Emerald Grove
+* FOR - Forest + Blighted Village
+* HAG - Sunlit Wetlands/Swamp
+* GOB - Goblin Camp
+* PLA - Risen Road
+* UND - Underdark
+* CRE - Creche
+
+### Act 2
+
+* SCL - Shadow Cursed Lands
+
+### Act 3
+
+* BGO - Baldur's Gate Outer (Rivington & Wyrm's Crossing)
+* CTY - Lower City
+* WQH - Water Queen's House
+* END - High Hall + Brain Fight
+* EPI - Epilogue
+
+* CMP - Camp
+* CIN - Cinematic (places only used for cutscenes)
+
+## Root Templates:
+
+* ARM - Armour + Clothes + Accessories
+* ATM - Atmosphere - trees, rocks, backgrounds, etc
+* BAN - Banner
+* BLD - Building
+* CINE - Cinematic
+* CMB - ???
+* CMP - Companion Camp Tent
+* CONS - Consumable
+* CONT - Container
+* DCL - Decal
+* DEC - Decoration
+* FUR - Furniture
+* GTY - Githyanki
+* LTS - Light Source
+* LT - Level Template
+* MF - Mindflayer/Illithid
+* NAT - Natural
+* PLT - Platform
+* TR - Terrain
+* UNI - ???
+* WALL - Construction
+* WFL - Waterfall
+* WPN - Weapon
+
+## Story:
+
+File names of xref:osiris-intro.adoc[OSIRIS] goals
+
+* GLO - Global
+* ORI - Origin
