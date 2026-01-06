@@ -1,0 +1,27 @@
+# Camera Blockers
+
+There are 2 triggers that can be use to prevent the player moving the camera into certain areas - the Camera Lock, and the Camera Blocker Trigger.
+
+## How does the Camera Move?
+
+Unlike what you might think, when you move the camera around a level in Game Mode, you aren't really moving the camera.
+Instead, you're moving an invisible point on the ground the the camera is looking at. The camera tries to keep itself at a fixed distance and angle from this invisible point, which the player can change with the scroll wheel.
+
+## The Camera Blocker Trigger
+
+The simpler of the two triggers is the Camera Blocker. It quite simply stops either the camera, or the position it's looking at from being within the bounds of the trigger:
+
+image::camera_blocker_trigger.png[]
+
+The Camera Blocker has no unique configs.
+
+## The Camera Lock
+
+The Camera Lock is the second way to control where the player can move the camera.
+It's the inverse of the Camera Blocker - instead of stopping the camera from moving into it, it prevents the camera from moving out of it.
+It has two unique configs:
+
+- Game Camera Behaviour - Can be set to either Exterior or Interior. I do not know what this does
+- Camera Lock on Position - Whether the camera itself is locked within the trigger. The point the camera is looking at is always locked within the trigger.
+
+image::camera_lock.png[]
